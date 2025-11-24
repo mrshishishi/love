@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>致特别的你 ✨</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            background-color: #ffdde1;
+            background-image: linear-gradient(to top, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+            overflow: hidden;
+            font-family: 'ZCOOL KuaiLe', cursive, sans-serif;
+            transition: background 1s ease;
+        }
+
+        /* 背景漂浮爱心 */
+        .bg-heart {
+            position: absolute;
+            top: -10%;
+            color: rgba(255, 255, 255, 0.5);
+            animation: float 10s infinite ease-in;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(110vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            width: 90%;
+            max-width: 400px;
+            transition: opacity 0.5s ease;
+        }
+
+        /* --- 核心修改：用 Emoji 替代图片容器 --- */
+        .emoji-container {
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 100px; /* 超大 Emoji */
+            line-height: 1.2;
+            filter: drop-shadow(0 5px 15px rgba(255, 100, 100, 0.3)); /* 给 Emoji 加点柔光 */
+            user-select: none;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 小熊呼吸动画 */
+        .breathing {
+            animation: breathe 2s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 拒绝时的颤抖动画 */
+        .shake {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px) rotate(-5deg); }
+            50% { transform: translateX(10px) rotate(5deg); }
+            75% { transform: translateX(-10px) rotate(-5deg); }
+            100% { transform: translateX(0); }
+        }
+
+        /* 成功时的图片容器 (保留最后的动图) */
+        .gif-container img {
+            width: 100%;
+            max-width: 250px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            min-height: 150px;
+        }
+
+        h1 {
+            color: #ff4b6e;
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'ZCOOL KuaiLe', cursive, sans-serif;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #yesBtn {
+            background-color: #ff4b6e;
+            color: white;
+            z-index: 2;
+        }
+
+        #yesBtn:hover {
+            background-color: #ff2e56;
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(255, 75, 110, 0.4);
+        }
+
+        #noBtn {
+            background-color: #fff;
+            color: #ff4b6e;
+            border: 2px solid #ff4b6e;
+        }
+
+        #noBtn:hover {
+            background-color: #ffe6ea;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .success-text {
+            font-size: 2rem;
+            color: #ff4b6e;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.9);
+            animation: fadeIn 2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #confetti {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="hearts-container"></div>
+    <canvas id="confetti"></canvas>
+
+    <div class="container" id="mainCard">
+        <!-- 这里不再使用 img，而是使用 emoji 容器 -->
+        <div class="emoji-container breathing" id="emojiDisplay">
+            🐻💖
+        </div>
+        <h1 id="question">做我女朋友好吗？</h1>
+        <div class="btn-container">
+            <button id="yesBtn">好呀 ❤</button>
+            <button id="noBtn">不要</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="successCard">
+        <div class="gif-container">
+            <!-- 最后的成功图片保留你喜欢的动图 -->
+            <img src="https://media1.tenor.com/m/gUiu1zyxfzYAAAAC/bear-kiss-bear-hugs.gif" 
+                 alt="Happy Hug">
+        </div>
+        <h1 class="success-text">我就知道你会答应！<br>我们要一直在一起喔 (pVq)</h1>
+    </div>
+
+    <script>
+        const yesBtn = document.getElementById('yesBtn');
+        const noBtn = document.getElementById('noBtn');
+        const question = document.getElementById('question');
+        const emojiDisplay = document.getElementById('emojiDisplay');
+        const mainCard = document.getElementById('mainCard');
+        const successCard = document.getElementById('successCard');
+        const heartsContainer = document.getElementById('hearts-container');
+
+        // 拒绝文案
+        const noTexts = [
+            "不要", 
+            "你认真的吗？", 
+            "再想想嘛...", 
+            "不许选这个！", 
+            "我会很伤心的 T_T", 
+            "求求你了...",
+            "别这样嘛...",
+            "行吧，那我就...",
+            "我就当你手滑了"
+        ];
+        
+        // 核心修改：不同阶段的 Emoji 组合
+        // 这些是纯文本，永远不会加载失败！
+        const sadEmojis = [
+            "🐻💔",       // 1. 心碎
+            "🐻💧",       // 2. 流汗/紧张
+            "🐻😭",       // 3. 大哭
+            "👻🥀",       // 4. 灵魂出窍+凋谢的花
+            "💔🏥"        // 5. 彻底心碎进医院
+        ];
+
+        let clickCount = 0;
+        let yesBtnSize = 1.2;
+
+        function createHearts() {
+            for (let i = 0; i < 20; i++) {
+                const heart = document.createElement('div');
+                heart.classList.add('bg-heart');
+                heart.innerHTML = Math.random() > 0.5 ? '❤' : '💕';
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.animationDuration = Math.random() * 5 + 5 + 's';
+                heart.style.fontSize = Math.random() * 20 + 20 + 'px';
+                heartsContainer.appendChild(heart);
+            }
+        }
+        createHearts();
+
+        // 点击 "不要" 的逻辑
+        noBtn.addEventListener('click', () => {
+            clickCount++;
+            
+            // 变大 "好呀" 按钮
+            yesBtnSize *= 1.3;
+            yesBtn.style.fontSize = `${yesBtnSize}rem`;
+            
+            // 改变文字
+            const textIndex = Math.min(clickCount, noTexts.length - 1);
+            noBtn.innerText = noTexts[textIndex];
+            
+            // 改变 Emoji
+            const emojiIndex = (clickCount - 1) % sadEmojis.length;
+            emojiDisplay.innerText = sadEmojis[emojiIndex];
+            
+            // 移除呼吸动画，添加颤抖动画 (让它看起来很伤心/害怕)
+            emojiDisplay.classList.remove('breathing');
+            emojiDisplay.classList.add('shake');
+            
+            // 动画播放完后移除 class，以便下次点击再次触发
+            setTimeout(() => {
+                emojiDisplay.classList.remove('shake');
+            }, 500);
+            
+            // 改变标题文字
+            question.innerText = "真的不答应吗？(T_T)";
+
+            // 如果按钮太大，让它占据全屏
+            if (yesBtnSize > 6) {
+                yesBtn.style.position = 'fixed';
+                yesBtn.style.top = '0';
+                yesBtn.style.left = '0';
+                yesBtn.style.width = '100vw';
+                yesBtn.style.height = '100vh';
+                yesBtn.style.borderRadius = '0';
+                yesBtn.style.display = 'flex';
+                yesBtn.style.justifyContent = 'center';
+                yesBtn.style.alignItems = 'center';
+                yesBtn.style.zIndex = '100';
+            }
+        });
+
+        // 点击 "好呀" 的逻辑
+        yesBtn.addEventListener('click', () => {
+            mainCard.classList.add('hidden');
+            successCard.classList.remove('hidden');
+            document.body.style.backgroundImage = "linear-gradient(to top, #ff0844 0%, #ffb199 100%)";
+            startConfetti();
+        });
+
+        // 撒花特效
+        function startConfetti() {
+            const canvas = document.getElementById('confetti');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const colors = ['#ff4b6e', '#ffb7b2', '#ff9a9e', '#fecfef', '#ffffff'];
+
+            function Particle() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height - canvas.height;
+                this.size = Math.random() * 15 + 10;
+                this.speedX = Math.random() * 2 - 1;
+                this.speedY = Math.random() * 3 + 2;
+                this.color = colors[Math.floor(Math.random() * colors.length)];
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 2 - 1;
+                this.isHeart = Math.random() > 0.5;
+            }
+
+            Particle.prototype.update = function() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+                
+                if (this.y > canvas.height) {
+                    this.y = -20;
+                    this.x = Math.random() * canvas.width;
+                }
+            };
+
+            Particle.prototype.draw = function() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                
+                if (this.isHeart) {
+                    ctx.fillStyle = this.color;
+                    ctx.font = this.size + "px Arial";
+                    ctx.fillText("❤", -this.size/2, this.size/2);
+                } else {
+                    ctx.fillStyle = this.color;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, this.size / 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.restore();
+            };
+
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
