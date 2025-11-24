@@ -46,7 +46,7 @@
             transition: opacity 0.5s ease;
         }
 
-        /* --- 核心修改：用 Emoji 替代图片容器 --- */
+        /* --- Emoji 容器样式 --- */
         .emoji-container {
             min-height: 200px;
             display: flex;
@@ -54,12 +54,12 @@
             align-items: center;
             font-size: 100px; /* 超大 Emoji */
             line-height: 1.2;
-            filter: drop-shadow(0 5px 15px rgba(255, 100, 100, 0.3)); /* 给 Emoji 加点柔光 */
+            filter: drop-shadow(0 5px 15px rgba(255, 100, 100, 0.3)); 
             user-select: none;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* 小熊呼吸动画 */
+        /* 初始：小熊呼吸动画 */
         .breathing {
             animation: breathe 2s infinite ease-in-out;
         }
@@ -69,7 +69,7 @@
             50% { transform: scale(1.1); }
         }
 
-        /* 拒绝时的颤抖动画 */
+        /* 拒绝：颤抖动画 */
         .shake {
             animation: shake 0.5s;
         }
@@ -82,14 +82,48 @@
             100% { transform: translateX(0); }
         }
 
-        /* 成功时的图片容器 (保留最后的动图) */
-        .gif-container img {
-            width: 100%;
-            max-width: 250px;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-            min-height: 150px;
+        /* 成功：甜蜜亲亲动画 */
+        .kissing-bears {
+            position: relative;
+            font-size: 80px; /* 稍微调小一点以便放下两个 */
+        }
+        
+        .bear-left {
+            display: inline-block;
+            animation: kiss-left 1.5s infinite ease-in-out;
+            transform-origin: right bottom;
+        }
+        
+        .bear-right {
+            display: inline-block;
+            animation: kiss-right 1.5s infinite ease-in-out;
+            transform-origin: left bottom;
+        }
+        
+        .heart-pop {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 50px;
+            opacity: 0;
+            animation: heart-popup 1.5s infinite ease-in-out;
+        }
+
+        @keyframes kiss-left {
+            0%, 100% { transform: rotate(0deg) translateX(0); }
+            50% { transform: rotate(10deg) translateX(10px); }
+        }
+        
+        @keyframes kiss-right {
+            0%, 100% { transform: rotate(0deg) translateX(0); }
+            50% { transform: rotate(-10deg) translateX(-10px); }
+        }
+        
+        @keyframes heart-popup {
+            0% { opacity: 0; transform: translateX(-50%) scale(0); }
+            50% { opacity: 1; transform: translateX(-50%) scale(1.2); }
+            100% { opacity: 0; transform: translateX(-50%) scale(1.5) translateY(-20px); }
         }
 
         h1 {
@@ -177,7 +211,7 @@
     <canvas id="confetti"></canvas>
 
     <div class="container" id="mainCard">
-        <!-- 这里不再使用 img，而是使用 emoji 容器 -->
+        <!-- 初始状态：呼吸的小熊 -->
         <div class="emoji-container breathing" id="emojiDisplay">
             🐻💖
         </div>
@@ -189,10 +223,11 @@
     </div>
 
     <div class="container hidden" id="successCard">
-        <div class="gif-container">
-            <!-- 最后的成功图片保留你喜欢的动图 -->
-            <img src="https://media1.tenor.com/m/gUiu1zyxfzYAAAAC/bear-kiss-bear-hugs.gif" 
-                 alt="Happy Hug">
+        <!-- 成功状态：纯代码实现的“亲亲小熊”动画，手机完美显示 -->
+        <div class="emoji-container kissing-bears">
+            <div class="heart-pop">💖</div>
+            <span class="bear-left">🐻</span>
+            <span class="bear-right">🐼</span>
         </div>
         <h1 class="success-text">我就知道你会答应！<br>我们要一直在一起喔 (pVq)</h1>
     </div>
@@ -219,14 +254,13 @@
             "我就当你手滑了"
         ];
         
-        // 核心修改：不同阶段的 Emoji 组合
-        // 这些是纯文本，永远不会加载失败！
+        // 拒绝时的 Emoji 组合
         const sadEmojis = [
             "🐻💔",       // 1. 心碎
             "🐻💧",       // 2. 流汗/紧张
             "🐻😭",       // 3. 大哭
-            "👻🥀",       // 4. 灵魂出窍+凋谢的花
-            "💔🏥"        // 5. 彻底心碎进医院
+            "👻🥀",       // 4. 灵魂出窍
+            "💔🏥"        // 5. 进医院
         ];
 
         let clickCount = 0;
@@ -261,19 +295,15 @@
             const emojiIndex = (clickCount - 1) % sadEmojis.length;
             emojiDisplay.innerText = sadEmojis[emojiIndex];
             
-            // 移除呼吸动画，添加颤抖动画 (让它看起来很伤心/害怕)
+            // 颤抖动画
             emojiDisplay.classList.remove('breathing');
             emojiDisplay.classList.add('shake');
-            
-            // 动画播放完后移除 class，以便下次点击再次触发
             setTimeout(() => {
                 emojiDisplay.classList.remove('shake');
             }, 500);
             
-            // 改变标题文字
             question.innerText = "真的不答应吗？(T_T)";
 
-            // 如果按钮太大，让它占据全屏
             if (yesBtnSize > 6) {
                 yesBtn.style.position = 'fixed';
                 yesBtn.style.top = '0';
