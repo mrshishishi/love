@@ -46,20 +46,19 @@
             transition: opacity 0.5s ease;
         }
 
-        /* --- Emoji 容器样式 --- */
+        /* Emoji 容器 */
         .emoji-container {
             min-height: 200px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 100px; /* 超大 Emoji */
+            font-size: 100px;
             line-height: 1.2;
             filter: drop-shadow(0 5px 15px rgba(255, 100, 100, 0.3)); 
             user-select: none;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* 初始：小熊呼吸动画 */
         .breathing {
             animation: breathe 2s infinite ease-in-out;
         }
@@ -69,7 +68,6 @@
             50% { transform: scale(1.1); }
         }
 
-        /* 拒绝：颤抖动画 */
         .shake {
             animation: shake 0.5s;
         }
@@ -82,10 +80,9 @@
             100% { transform: translateX(0); }
         }
 
-        /* 成功：甜蜜亲亲动画 */
         .kissing-bears {
             position: relative;
-            font-size: 80px; /* 稍微调小一点以便放下两个 */
+            font-size: 80px;
         }
         
         .bear-left {
@@ -202,6 +199,18 @@
             pointer-events: none;
             z-index: 20;
         }
+        
+        /* 音乐控制提示 (可选) */
+        .music-hint {
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 5;
+        }
 
     </style>
 </head>
@@ -210,8 +219,15 @@
     <div id="hearts-container"></div>
     <canvas id="confetti"></canvas>
 
+    <!-- 背景音乐 -->
+    <!-- 这里 src="bgm.mp3" 表示读取同文件夹下的 bgm.mp3 文件 -->
+    <!-- 我加了一个备用的网络链接，如果你没有放 bgm.mp3，它会播放这首默认的 -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="bgm.mp3" type="audio/mpeg">
+        <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Kevin_MacLeod/Best_of_2014/Kevin_MacLeod_-_Carefree.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="container" id="mainCard">
-        <!-- 初始状态：呼吸的小熊 -->
         <div class="emoji-container breathing" id="emojiDisplay">
             🐻💖
         </div>
@@ -223,7 +239,6 @@
     </div>
 
     <div class="container hidden" id="successCard">
-        <!-- 成功状态：纯代码实现的“亲亲小熊”动画，手机完美显示 -->
         <div class="emoji-container kissing-bears">
             <div class="heart-pop">💖</div>
             <span class="bear-left">🐻</span>
@@ -231,6 +246,8 @@
         </div>
         <h1 class="success-text">我就知道你会答应！<br>我们要一直在一起喔 (pVq)</h1>
     </div>
+    
+    <div class="music-hint">点击屏幕任意处播放音乐 🎵</div>
 
     <script>
         const yesBtn = document.getElementById('yesBtn');
@@ -240,8 +257,17 @@
         const mainCard = document.getElementById('mainCard');
         const successCard = document.getElementById('successCard');
         const heartsContainer = document.getElementById('hearts-container');
+        const bgMusic = document.getElementById('bgMusic');
 
-        // 拒绝文案
+        // --- 音乐播放逻辑 ---
+        // 浏览器通常禁止自动播放，需要用户点一下屏幕才行
+        document.body.addEventListener('click', function() {
+            if (bgMusic.paused) {
+                bgMusic.play().catch(error => console.log("Music autoplay prevented:", error));
+                document.querySelector('.music-hint').style.display = 'none'; // 播放后隐藏提示
+            }
+        }, { once: false }); // 改为false确保如果第一次失败，第二次点击还能触发
+
         const noTexts = [
             "不要", 
             "你认真的吗？", 
@@ -254,13 +280,8 @@
             "我就当你手滑了"
         ];
         
-        // 拒绝时的 Emoji 组合
         const sadEmojis = [
-            "🐻💔",       // 1. 心碎
-            "🐻💧",       // 2. 流汗/紧张
-            "🐻😭",       // 3. 大哭
-            "👻🥀",       // 4. 灵魂出窍
-            "💔🏥"        // 5. 进医院
+            "🐻💔", "🐻💧", "🐻😭", "👻🥀", "💔🏥"
         ];
 
         let clickCount = 0;
@@ -279,23 +300,18 @@
         }
         createHearts();
 
-        // 点击 "不要" 的逻辑
-        noBtn.addEventListener('click', () => {
+        noBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // 防止触发body点击（可选）
             clickCount++;
-            
-            // 变大 "好呀" 按钮
             yesBtnSize *= 1.3;
             yesBtn.style.fontSize = `${yesBtnSize}rem`;
             
-            // 改变文字
             const textIndex = Math.min(clickCount, noTexts.length - 1);
             noBtn.innerText = noTexts[textIndex];
             
-            // 改变 Emoji
             const emojiIndex = (clickCount - 1) % sadEmojis.length;
             emojiDisplay.innerText = sadEmojis[emojiIndex];
             
-            // 颤抖动画
             emojiDisplay.classList.remove('breathing');
             emojiDisplay.classList.add('shake');
             setTimeout(() => {
@@ -316,17 +332,27 @@
                 yesBtn.style.alignItems = 'center';
                 yesBtn.style.zIndex = '100';
             }
+            
+            // 确保点击按钮也能触发音乐
+            if (bgMusic.paused) {
+                bgMusic.play();
+                document.querySelector('.music-hint').style.display = 'none';
+            }
         });
 
-        // 点击 "好呀" 的逻辑
         yesBtn.addEventListener('click', () => {
             mainCard.classList.add('hidden');
             successCard.classList.remove('hidden');
             document.body.style.backgroundImage = "linear-gradient(to top, #ff0844 0%, #ffb199 100%)";
             startConfetti();
+            
+            // 确保点击按钮也能触发音乐
+            if (bgMusic.paused) {
+                bgMusic.play();
+                document.querySelector('.music-hint').style.display = 'none';
+            }
         });
 
-        // 撒花特效
         function startConfetti() {
             const canvas = document.getElementById('confetti');
             const ctx = canvas.getContext('2d');
